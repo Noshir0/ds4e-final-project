@@ -11,7 +11,7 @@ license: mit
 
 # 🚕 NYC Taxi Fare — Linear Regression Lab
 
-**NYU DS-4-Everyone — Final Project (40%)**
+**NYU DS-4-Everyone — Final Project **
 
 A multi-page **Streamlit** app that solves a real business problem with
 **linear regression**: estimating the **total cost of a New York City taxi
