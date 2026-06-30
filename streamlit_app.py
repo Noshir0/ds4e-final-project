@@ -122,8 +122,8 @@ def build_model(name: str, **params) -> Pipeline:
         est = Ridge(alpha=params.get("alpha", 1.0))
     elif name == "Random Forest":
         est = RandomForestRegressor(
-            n_estimators=params.get("n_estimators", 200),
-            max_depth=params.get("max_depth", None),
+            n_estimators=params.get("n_estimators", 150),
+            max_depth=params.get("max_depth", 18),  # capped depth = faster train + SHAP
             random_state=42, n_jobs=-1,
         )
     else:
@@ -156,6 +156,20 @@ def feature_names(model: Pipeline):
 def transform_named(model: Pipeline, X: pd.DataFrame) -> pd.DataFrame:
     arr = model.named_steps["prep"].transform(X)
     return pd.DataFrame(np.asarray(arr), columns=feature_names(model), index=X.index)
+
+
+@st.cache_data(show_spinner=False)
+def compute_shap_values(model_name: str, n_sample: int):
+    """Compute & cache SHAP values so re-visiting the page is instant."""
+    model, _, data = train_model(model_name, f"explain-{model_name}")
+    X_test = data[1]
+    X_enc = transform_named(model, X_test.sample(min(n_sample, len(X_test)), random_state=0))
+    estimator = model.named_steps["model"]
+    if model_name == "Random Forest":
+        explainer = shap.TreeExplainer(estimator)
+    else:
+        explainer = shap.LinearExplainer(estimator, X_enc)
+    return np.asarray(explainer.shap_values(X_enc)), X_enc
 
 
 def metric_cards(metrics: dict):
@@ -454,20 +468,14 @@ elif page.startswith("4"):
         model, metrics, data = train_model(model_name, f"explain-{model_name}")
     X_train, X_test, y_train, y_test, preds = data
 
-    n_sample = st.slider("Sample size for SHAP (smaller = faster)", 100, 1000, 300, 100)
-    X_raw = X_test.sample(min(n_sample, len(X_test)), random_state=0)
-    X_enc = transform_named(model, X_raw)
+    n_sample = st.slider("Sample size for SHAP (smaller = faster)", 100, 500, 150, 50)
     estimator = model.named_steps["model"]
 
     shap_ok = False
     if SHAP_AVAILABLE:
-        with st.spinner("Computing SHAP values…"):
+        with st.spinner("Computing SHAP values… (cached after the first run)"):
             try:
-                if model_name == "Random Forest":
-                    explainer = shap.TreeExplainer(estimator)
-                else:
-                    explainer = shap.LinearExplainer(estimator, X_enc)
-                shap_values = explainer.shap_values(X_enc)
+                shap_values, X_enc = compute_shap_values(model_name, n_sample)
 
                 st.subheader("Global feature importance")
                 fig = plt.figure()
@@ -494,6 +502,7 @@ elif page.startswith("4"):
     if not shap_ok:
         st.subheader("Feature importance (permutation — fallback)")
         from sklearn.inspection import permutation_importance
+        X_raw = X_test.sample(min(n_sample, len(X_test)), random_state=0)
         with st.spinner("Computing permutation importance…"):
             r = permutation_importance(model, X_raw, y_test.loc[X_raw.index],
                                        n_repeats=5, random_state=0)
