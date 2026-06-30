@@ -34,7 +34,7 @@ analysis, prediction, explainability and experiment tracking.
 We model the continuous target `total` (US dollars) so a taxi app can quote an
 up-front fare and detect over- / under-billing.
 
-## The five pages (matches the grading rubric)
+## The six pages (matches the grading rubric)
 
 | # | Page | What it does |
 |---|------|--------------|
@@ -43,6 +43,7 @@ up-front fare and detect over- / under-billing.
 | 3 | **Prediction** | Train & **switch between 2+ models** (Linear, Ridge, Random Forest); metrics + interactive fare estimate |
 | 4 | **Explainable AI** | **SHAP** global importance, beeswarm, and linear coefficients |
 | 5 | **Hyperparameter Tuning** | Grid sweep with experiment tracking + optional **Weights & Biases** logging; auto-selects the best model |
+| 6 | **Conclusion** | Live model comparison, key findings, business recommendations, limitations & next steps |
 
 ## Dataset
 

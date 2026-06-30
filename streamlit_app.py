@@ -182,6 +182,7 @@ PAGES = [
     "3 · Prediction 🤖",
     "4 · Explainable AI 🔍",
     "5 · Hyperparameter Tuning ⚙️",
+    "6 · Conclusion 🎯",
 ]
 page = st.sidebar.radio("Navigate", PAGES, label_visibility="collapsed")
 st.sidebar.divider()
@@ -614,5 +615,107 @@ elif page.startswith("5"):
             st.caption("Tip: enable W&B logging above for a shareable online dashboard.")
     else:
         st.info("Configure the options above and click **Run sweep** to begin.")
+
+
+# ============================================================================
+# PAGE 6 — CONCLUSION
+# ============================================================================
+elif page.startswith("6"):
+    st.title("🎯 Conclusion")
+    st.caption("What we built, what we learned, and what it means for the business.")
+
+    st.header("The problem, recapped")
+    st.markdown(
+        """
+        We set out to answer one question for a ride-hailing / taxi platform:
+
+        > *Given the details of a NYC taxi trip, what will the **total cost** be —
+        > and which factors drive it the most?*
+
+        Using ~6,300 real NYC taxi trips, we built an end-to-end Streamlit app that
+        explores the data, predicts the fare with **linear regression**, explains
+        the drivers with **SHAP**, and tunes models with experiment tracking.
+        """
+    )
+
+    # --- Live model comparison so the conclusion reflects real numbers ---
+    st.header("How well can we predict the fare?")
+    st.session_state["model_params"] = {}
+    rows = []
+    with st.spinner("Evaluating the three models…"):
+        for name in ["Linear Regression", "Ridge Regression", "Random Forest"]:
+            _, m, _ = train_model(name, f"conclusion-{name}")
+            rows.append({"Model": name, **m})
+    results = pd.DataFrame(rows).sort_values("R²", ascending=False).reset_index(drop=True)
+    best = results.iloc[0]
+
+    c1, c2 = st.columns([3, 2])
+    with c1:
+        st.dataframe(
+            results.style.format({"R²": "{:.3f}", "RMSE": "${:,.2f}", "MAE": "${:,.2f}"})
+                   .highlight_max(subset=["R²"], color="#b6e3b6")
+                   .highlight_min(subset=["RMSE", "MAE"], color="#b6e3b6"),
+            use_container_width=True, hide_index=True,
+        )
+    with c2:
+        st.metric("🏆 Best model", best["Model"], help="Highest R² on the held-out test set")
+        st.metric("R²", f"{best['R²']:.3f}")
+        st.metric("Typical error (RMSE)", f"${best['RMSE']:,.2f}")
+
+    st.success(
+        f"Our best model (**{best['Model']}**) explains **{best['R²']*100:.1f}%** of the "
+        f"variation in trip cost, with a typical error of only **${best['RMSE']:,.2f}** — "
+        "accurate enough to power an up-front fare estimate."
+    )
+
+    st.header("Key findings")
+    st.markdown(
+        """
+        - 📏 **Distance and trip duration are the dominant drivers** of cost — confirmed
+          by both the correlation analysis and the SHAP feature-importance ranking.
+        - 👥 **Passenger count barely matters**: NYC fares are charged per *trip*, not
+          per person.
+        - 🗺️ **Pickup borough shifts the baseline**: trips starting outside Manhattan
+          tend to cost more (longer rides into the city); the **JFK airport flat fare**
+          shows up as a distinct cluster around \\$70.
+        - 💳 **Payment type correlates with recorded total** — cash tips go unrecorded,
+          so credit-card trips show a higher logged total.
+        - ⚖️ **Linear models are already strong here** because the core relationship
+          (distance → fare) is close to linear; Random Forest adds a modest edge by
+          capturing non-linear effects like the airport flat fare.
+        """
+    )
+
+    st.header("Business recommendations")
+    st.markdown(
+        """
+        1. 💵 **Ship up-front pricing** using the model — distance + duration + route
+           are enough for a reliable quote before the trip starts.
+        2. 🚨 **Flag anomalies**: trips whose actual cost deviates far from the predicted
+           value are candidates for over-/under-billing review.
+        3. 📈 **Feed surge/dynamic pricing** with the model's baseline so surcharges are
+           applied on top of an objective, explainable estimate.
+        """
+    )
+
+    st.header("Limitations & next steps")
+    st.markdown(
+        """
+        - The sample is a **snapshot of NYC trips**; retrain on the full, current
+          TLC dataset before production use.
+        - We deliberately **excluded `fare`/`tip`/`tolls`** (they sum to `total`) to
+          avoid leakage — a production model could instead predict the metered fare
+          and model tips separately.
+        - Next: add **traffic & weather** features, try a **log-transformed target**
+          for the long right tail, and run a larger **W&B sweep** to squeeze out more
+          accuracy.
+        """
+    )
+
+    st.divider()
+    st.markdown(
+        "**Thanks for visiting!** Built with Streamlit · Pandas · Scikit-Learn · "
+        "SHAP · Weights & Biases — NYU DS-4-Everyone Final Project."
+    )
 
 #streamlit run streamlit_app.py 
