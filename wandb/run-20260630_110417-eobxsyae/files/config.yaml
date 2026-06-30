@@ -1,0 +1,39 @@
+_wandb:
+    value:
+        cli_version: 0.27.2
+        e:
+            xgtii6kxwzmagobrs8bgg29bd7w8r9h9:
+                executable: /usr/local/bin/python3
+                git:
+                    commit: 5f4fecb9b15c9375a61efafdb49b7e74bc42780c
+                    remote: https://github.com/Noshir0/ds4e-final-project.git
+                host: JonathandeMacBook-Pro.local
+                os: macOS-26.5.1-arm64-arm-64bit-Mach-O
+                program: /private/tmp/claude-501/-Users-jonathan-Downloads/9b87832f-49c6-4405-87bd-43be813ba46d/scratchpad/populate_wandb.py
+                python: CPython 3.14.2
+                root: /Users/jonathan/Downloads/streamlit_final_project
+                startedAt: "2026-06-30T15:04:17.802762Z"
+                writerId: xgtii6kxwzmagobrs8bgg29bd7w8r9h9
+        m: []
+        python_version: 3.14.2
+        t:
+            "1":
+                - 5
+                - 53
+            "2":
+                - 5
+                - 53
+            "3":
+                - 2
+                - 13
+                - 16
+            "4": 3.14.2
+            "5": 0.27.2
+            "10":
+                - 20
+            "12": 0.27.2
+            "13": darwin-arm64
+alpha:
+    value: 0.1
+family:
+    value: Ridge Regression

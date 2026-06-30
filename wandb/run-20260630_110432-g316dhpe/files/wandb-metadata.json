@@ -1,0 +1,14 @@
+{
+  "os": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
+  "python": "CPython 3.14.2",
+  "startedAt": "2026-06-30T15:04:32.112368Z",
+  "program": "/private/tmp/claude-501/-Users-jonathan-Downloads/9b87832f-49c6-4405-87bd-43be813ba46d/scratchpad/populate_wandb.py",
+  "git": {
+    "remote": "https://github.com/Noshir0/ds4e-final-project.git",
+    "commit": "5f4fecb9b15c9375a61efafdb49b7e74bc42780c"
+  },
+  "root": "/Users/jonathan/Downloads/streamlit_final_project",
+  "host": "JonathandeMacBook-Pro.local",
+  "executable": "/usr/local/bin/python3",
+  "writerId": "vieuvwi07evmffxdo4y7o9ilngwi5hwq"
+}

@@ -12,7 +12,8 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
+from sklearn.metrics import (r2_score, mean_squared_error, mean_absolute_error,
+                             explained_variance_score)
 
 # ----------------------------------------------------------------------------
 # Optional dependencies — the app degrades gracefully if they are missing.
@@ -32,7 +33,7 @@ except Exception:  # pragma: no cover
 # Weights & Biases — the "Open W&B Dashboard" button on page 5 opens this project.
 # Point WANDB_DASHBOARD_URL at your own W&B project to show your runs.
 WANDB_PROJECT = "ds4e-nyc-taxi-final"
-WANDB_DASHBOARD_URL = "https://wandb.ai/gaetan-brison/NYU"
+WANDB_DASHBOARD_URL = "https://wandb.ai/jonathanlyj0123-new-york-university/ds4e-nyc-taxi-final"
 
 
 # ----------------------------------------------------------------------------
@@ -584,7 +585,13 @@ elif page.startswith("5"):
                 try:
                     run = wandb.init(project=wandb_project, name=f"{family}-{i}",
                                      config=cfg, reinit=True)
-                    wandb.log({k: row[k] for k in ("R²", "RMSE", "MAE")})
+                    wandb.log({
+                        "R2": row["R²"],
+                        "RMSE": row["RMSE"],
+                        "MSE": row["RMSE"] ** 2,
+                        "MAE": row["MAE"],
+                        "explained_variance": explained_variance_score(y_test, p),
+                    })
                     run.finish()
                 except Exception as e:
                     st.warning(f"W&B logging error: {e}")
