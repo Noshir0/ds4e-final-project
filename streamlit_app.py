@@ -29,6 +29,11 @@ try:
 except Exception:  # pragma: no cover
     WANDB_AVAILABLE = False
 
+# Weights & Biases — the "Open W&B Dashboard" button on page 5 opens this project.
+# Point WANDB_DASHBOARD_URL at your own W&B project to show your runs.
+WANDB_PROJECT = "ds4e-nyc-taxi-final"
+WANDB_DASHBOARD_URL = "https://wandb.ai/gaetan-brison/NYU"
+
 
 # ----------------------------------------------------------------------------
 # Page config & light styling
@@ -534,15 +539,16 @@ elif page.startswith("5"):
 
     family = st.selectbox("Model family to tune", ["Ridge Regression", "Random Forest"])
 
-    with st.expander("🔗 Weights & Biases logging (optional)"):
-        if WANDB_AVAILABLE:
-            use_wandb = st.checkbox("Log this sweep to Weights & Biases")
-            wandb_key = st.text_input("W&B API key", type="password",
-                                      help="From https://wandb.ai/authorize")
-            wandb_project = st.text_input("W&B project", value="ds4e-nyc-taxi-final")
-        else:
-            use_wandb, wandb_key, wandb_project = False, "", ""
-            st.info("`wandb` is not installed. `pip install wandb` to enable logging.")
+    # W&B API key is read silently from Streamlit secrets / environment — no key
+    # input is shown. Add WANDB_API_KEY to .streamlit/secrets.toml (or the env) to
+    # log every sweep run to your W&B project automatically.
+    try:
+        _secret_key = st.secrets.get("WANDB_API_KEY", "")
+    except Exception:
+        _secret_key = ""
+    wandb_key = _secret_key or os.environ.get("WANDB_API_KEY", "")
+    wandb_project = WANDB_PROJECT
+    use_wandb = bool(WANDB_AVAILABLE and wandb_key)
 
     if family == "Ridge Regression":
         grid = [{"alpha": a} for a in [0.01, 0.1, 1, 10, 50, 100]]
@@ -620,10 +626,16 @@ elif page.startswith("5"):
             ax.set_title("R² across the hyperparameter grid")
             st.pyplot(fig); plt.close(fig)
 
-        if WANDB_AVAILABLE:
-            st.caption("Tip: enable W&B logging above for a shareable online dashboard.")
     else:
         st.info("Configure the options above and click **Run sweep** to begin.")
+
+    # ---- Weights & Biases Experiment Tracking (live dashboard) ----
+    st.divider()
+    st.subheader("🏋️ Weights & Biases Experiment Tracking")
+    st.info("Click the button below to view your dashboard:")
+    st.link_button("🔗 Open W&B Dashboard", WANDB_DASHBOARD_URL)
+    if use_wandb:
+        st.caption("✅ Each sweep run is being logged to W&B automatically.")
 
 
 # ============================================================================
